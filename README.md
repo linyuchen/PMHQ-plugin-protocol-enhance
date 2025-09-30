@@ -6,7 +6,7 @@
 
 ### 安装
 
-Release 页面下载解压后并将本插件放入 PMHQ 同级目录 `plugins`下, 重启QQ即可
+Release 页面下载解压后并将本插件放入 PMHQ 同级目录 `plugins`下, 使用 PMHQ 启动 QQ 即可
 
 目录如下:
 ```
