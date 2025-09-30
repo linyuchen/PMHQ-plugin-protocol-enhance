@@ -1,0 +1,7 @@
+.idea/
+dist/
+!src/electron-prompts/dist/
+build/
+node_modules/
+.venv/
+package-lock.json

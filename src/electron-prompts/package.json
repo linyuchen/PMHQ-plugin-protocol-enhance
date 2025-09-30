@@ -1,0 +1,34 @@
+{
+  "name": "electron-prompts",
+  "version": "0.9.13",
+  "description": "An easy tool to enable prompts from the Electron main process",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "test": "npm run build && electron-mocha test/test.js",
+    "test-nobuild": "electron-mocha test/test.js",
+    "model-prompts": "electron test/test-simple.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pbxx/electron-prompts.git"
+  },
+  "author": "Donavan Lewis",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/pbxx/electron-prompts/issues"
+  },
+  "homepage": "https://pbxx.github.io/electron-prompts/",
+  "dependencies": {
+    "ansis": "^3.2.0",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "chai": "^5.1.0",
+    "electron": "^29.1.6",
+    "electron-mocha": "^12.3.0",
+    "typescript": "^5.4.5"
+  }
+}

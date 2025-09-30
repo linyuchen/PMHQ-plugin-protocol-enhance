@@ -1,0 +1,33 @@
+{
+  "name": "pmhq-protocol-packet",
+  "version": "1.0.6",
+  "description": "利用协议包扩展 NTQQ 功能",
+  "type": "module",
+  "main": "dist/main.cjs",
+  "scripts": {
+    "build": "electron-vite build"
+  },
+  "author": "linyuchen",
+  "license": "ISC",
+  "dependencies": {
+    "@protobuf-ts/runtime": "^2.9.4",
+    "electron-osx-prompt": "^1.4.1",
+    "electron-prompt": "^1.7.0",
+    "electron-prompts": "^0.9.13"
+  },
+  "devDependencies": {
+    "@rollup/plugin-node-resolve": "^15.3.0",
+    "@types/electron-prompt": "^1.6.5",
+    "@types/node": "^22.8.6",
+    "custom-electron-prompt": "^1.5.8",
+    "electron": "^33.0.2",
+    "electron-vite": "^2.3.0",
+    "protobufjs": "^7.5.4",
+    "rollup-plugin-terser": "^7.0.2",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.10",
+    "vite-plugin-cp": "^4.0.8",
+    "vite-plugin-dts": "^4.3.0",
+    "vite-plugin-static-copy": "^2.0.0"
+  }
+}
