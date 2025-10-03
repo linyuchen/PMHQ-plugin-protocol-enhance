@@ -11,7 +11,7 @@ Release 页面下载解压后并将本插件放入 PMHQ 同级目录 `plugins`�
 目录如下:
 ```
 plugins
-├── pmhq-plugin-pe
+├── pmhq-plugin-protocol-enhance
 │   ├── README.md
 │   ├── logo.jpg
 │   ├── main.cjs
