@@ -1,10 +1,10 @@
 import i_poke from './icon/poke.svg'
 import i_title from './icon/special-title.svg'
 
-function getTargetByAvatar(avatarElement) {
+function getTargetByAvatar(rightClickElement) {
     // 判断是否是消息上的头像
-    if (avatarElement.classList.contains('message-container__avatar')) {
-        const props = avatarElement.parentElement.parentElement.parentElement.__VUE__[0].vnode.component.props
+    if (rightClickElement.classList.contains('message-container__avatar')) {
+        const props = rightClickElement.parentElement.parentElement.parentElement.__VUE__[0].vnode.component.props
         if (props.msgRecord.chatType === 1) {
             return {
                 targetUin: props.msgRecord.senderUin,
@@ -19,8 +19,8 @@ function getTargetByAvatar(avatarElement) {
         }
     }
     // 判断是否是群成员列表上的头像
-    if (avatarElement.classList.contains('group-user__avatar')) {
-        const vueInstance = avatarElement.parentElement.parentElement.__VUE__[0];
+    if (rightClickElement.classList.contains('group-user__avatar')) {
+        const vueInstance = rightClickElement.parentElement.parentElement.__VUE__[0];
         const props = vueInstance.props;
         // console.log(props)
         // 通过vue的parent Component 获取群号
@@ -30,6 +30,20 @@ function getTargetByAvatar(avatarElement) {
             groupCode,
             targetUin: props.memberData.uin,
             targetUid: props.memberData.uid
+        }
+    }
+
+    // 小灰条消息
+    if (rightClickElement.classList.contains('gray-tip-action')) {
+        const vueInstance = rightClickElement.parentElement.__VUE__[0];
+        const msgRecord = vueInstance.parent.data.msgRecord
+        const targetUin = msgRecord.elements[0].grayTipElement.jsonGrayTipElement.xmlToJsonParam.templParam.get('uin_str1')
+        const targetUid = vueInstance.props[3]?.payload.uid
+        const groupCode = msgRecord.peerUin
+        return {
+            groupCode,
+            targetUin,
+            targetUid
         }
     }
 }
@@ -62,9 +76,9 @@ function injectContextMenu() {
                 // console.log(avatar);
                 avatar.addEventListener('contextmenu', e => {
                     // console.log('右击了头像', e);
-                    const message = getTargetByAvatar(e.target)
-                    if (message.chatType === 1) {
-                        window.llqqnt_pp.poke(message.senderUin);
+                    const targetInfo = getTargetByAvatar(e.target)
+                    if (!targetInfo.groupCode) {
+                        window.llqqnt_pp.poke(targetInfo.targetUin);
                     }
                 });
             });
@@ -73,25 +87,37 @@ function injectContextMenu() {
             const r = node.previousSibling.getBoundingClientRect();
             const rightClickEle = document.elementFromPoint(r.x, r.y);
             // console.log("右击的元素", rightClickEle);
-            if (rightClickEle.classList?.contains('avatar')) {
-                node.previousSibling.insertAdjacentHTML('beforeend',
-                    `<a class="q-context-menu-item q-context-menu-item--normal poke-menu vue-component" bf-label-inner="true">
-                 <div class="q-context-menu-item__icon q-context-menu-item__head"><i class="q-svg-icon q-icon" style="width: 16px; height: 16px"> 
-                 <img class="my-icon" src="${i_poke}" alt="" style="width: 16px; height: 16px;transform: rotate(90deg) scaleY(-1);"></i></div>` +
-                    '<span class="q-context-menu-item__text" >戳一戳</span></a>' +
-                    '<a class="q-context-menu-item q-context-menu-item--normal special-title-menu">' +
-                    `<div class="q-context-menu-item__icon q-context-menu-item__head"><i class="q-svg-icon q-icon" style="width: 16px; height: 16px">
-                <img class="my-icon" src="${i_title}" alt="" style="width: 16px; height: 16px"></i></div>` +
-                    '<span class="q-context-menu-item__text" >设置头衔</span></a>'
-                );
+            const isAvatar = rightClickEle.classList.contains('avatar');
+            const isGrayTipAction = rightClickEle.classList.contains('gray-tip-action');
+            if (isAvatar || isGrayTipAction) {
+                let html = `
+                <a class="q-context-menu-item q-context-menu-item--normal poke-menu vue-component" bf-label-inner="true">
+                     <div class="q-context-menu-item__icon q-context-menu-item__head">
+                         <i class="q-svg-icon q-icon" style="width: 16px; height: 16px"> 
+                             <img class="my-icon" src="${i_poke}" alt="" style="width: 16px; height: 16px;transform: rotate(90deg) scaleY(-1);">
+                         </i>
+                     </div>
+                    <span class="q-context-menu-item__text">戳一戳</span>
+                </a>`
+                if (isAvatar){
+                    html +=
+                    `<a class="q-context-menu-item q-context-menu-item--normal special-title-menu" bf-label-inner="true">
+                        <div class="q-context-menu-item__icon q-context-menu-item__head">
+                            <i class="q-svg-icon q-icon" style="width: 16px; height: 16px">
+                                <img class="my-icon" src="${i_title}" alt="" style="width: 16px; height: 16px">
+                            </i>
+                        </div>
+                        <span class="q-context-menu-item__text">设置头衔</span>
+                    </a>`
+                }
+                node.previousSibling.insertAdjacentHTML('beforeend', html);
+                const targetInfo = getTargetByAvatar(rightClickEle)
                 node.previousSibling.querySelector('.poke-menu').addEventListener('click', e => {
-                    const targetInfo = getTargetByAvatar(rightClickEle)
                     // const groupName = document.getElementsByClassName("chat-header__contact-name")[0].firstElementChild.textContent.trim();
                     window.llqqnt_pp.poke(targetInfo.targetUin, targetInfo.groupCode);
                 });
 
-                node.previousSibling.querySelector('.special-title-menu').addEventListener('click', e => {
-                    const targetInfo = getTargetByAvatar(rightClickEle)
+                node.previousSibling.querySelector('.special-title-menu')?.addEventListener('click', e => {
                     // const groupName = document.getElementsByClassName("chat-header__contact-name")[0].firstElementChild.textContent.trim();
                     window.llqqnt_pp.setSpecialTitle(targetInfo.groupCode, targetInfo.targetUid);
                 });
