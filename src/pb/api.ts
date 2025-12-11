@@ -3,6 +3,7 @@ import {Oidb} from "./compiled";
 
 export class PBApi {
   sendPB(cmd: string, pb: Uint8Array) {
+    // console.log('发送pb');
     global.PMHQ.sendPB(cmd, Buffer.from(pb).toString('hex'))
   }
 
@@ -16,7 +17,7 @@ export class PBApi {
       subCommand: 1,
       body,
     }).finish()
-    console.log('friend poke pb data', data)
+    // console.log('friend poke pb data', data)
     this.sendPB('OidbSvcTrpcTcp.0xed3_1', data)
   }
 

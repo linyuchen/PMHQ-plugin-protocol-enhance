@@ -4,7 +4,10 @@ import i_title from './icon/special-title.svg'
 function getTargetByAvatar(rightClickElement) {
     // 判断是否是消息上的头像
     if (rightClickElement.classList.contains('message-container__avatar')) {
-        const props = rightClickElement.parentElement.parentElement.parentElement.__VUE__[0].vnode.component.props
+        let props = rightClickElement.parentElement.parentElement.parentElement['__VUE__']?.[0].vnode.component.props;
+        if (!props) {
+            props = rightClickElement.parentElement.parentElement.parentElement.parentElement['__VUE__']?.[0].vnode.component.props;
+        }
         if (props.msgRecord.chatType === 1) {
             return {
                 targetUin: props.msgRecord.senderUin,
@@ -99,9 +102,9 @@ function injectContextMenu() {
                      </div>
                     <span class="q-context-menu-item__text">戳一戳</span>
                 </a>`
-                if (isAvatar){
+                if (isAvatar) {
                     html +=
-                    `<a class="q-context-menu-item q-context-menu-item--normal special-title-menu" bf-label-inner="true">
+                        `<a class="q-context-menu-item q-context-menu-item--normal special-title-menu" bf-label-inner="true">
                         <div class="q-context-menu-item__icon q-context-menu-item__head">
                             <i class="q-svg-icon q-icon" style="width: 16px; height: 16px">
                                 <img class="my-icon" src="${i_title}" alt="" style="width: 16px; height: 16px">
@@ -112,10 +115,27 @@ function injectContextMenu() {
                 }
                 node.previousSibling.insertAdjacentHTML('beforeend', html);
                 const targetInfo = getTargetByAvatar(rightClickEle)
-                node.previousSibling.querySelector('.poke-menu').addEventListener('click', e => {
-                    // const groupName = document.getElementsByClassName("chat-header__contact-name")[0].firstElementChild.textContent.trim();
-                    window.llqqnt_pp.poke(targetInfo.targetUin, targetInfo.groupCode);
-                });
+                // console.log('[戳一戳] targetInfo:', targetInfo)
+                // console.log('[戳一戳] .poke-menu element:', node.previousSibling.querySelector('.poke-menu'))
+                const pokeMenu = node.previousSibling.querySelector('.poke-menu')
+                if (pokeMenu) {
+                    pokeMenu.addEventListener('click', e => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        // console.log('[戳一戳] 点击了，准备调用 poke', targetInfo);
+                        if (!targetInfo) {
+                            // console.error('[戳一戳] targetInfo 为空');
+                            return;
+                        }
+                        if (!window.llqqnt_pp?.poke) {
+                            // console.error('[戳一戳] window.llqqnt_pp.poke 未定义');
+                            return;
+                        }
+                        window.llqqnt_pp.poke(targetInfo.targetUin, targetInfo.groupCode);
+                    });
+                } else {
+                    // console.error('[戳一戳] 找不到 .poke-menu 元素');
+                }
 
                 node.previousSibling.querySelector('.special-title-menu')?.addEventListener('click', e => {
                     // const groupName = document.getElementsByClassName("chat-header__contact-name")[0].firstElementChild.textContent.trim();

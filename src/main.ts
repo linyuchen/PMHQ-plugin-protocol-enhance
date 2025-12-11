@@ -20,7 +20,7 @@ interface SpecialTitleParams{
 }
 
 ipcMain.handle('llqqnt_pp_poke', async (event: any, {groupUin, userUin}: PokeParams) => {
-    console.log('llqqnt_pp_poke called', userUin, groupUin);
+    // console.log('llqqnt_pp_poke called', userUin, groupUin);
     try {
         if (groupUin) {
             api.sendGroupPoke(+groupUin, +userUin);

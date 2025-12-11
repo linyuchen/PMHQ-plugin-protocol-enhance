@@ -13,4 +13,8 @@ const llqqnt_protocol_packet = {
     },
 };
 // 在window对象下导出只读对象
-contextBridge.exposeInMainWorld('llqqnt_pp', llqqnt_protocol_packet);
+const exposeInMainWorld = (key, value) => contextBridge.executeInMainWorld({
+    func: key => key in globalThis,
+    args: [key]
+}) || contextBridge.exposeInMainWorld(key, value);
+exposeInMainWorld('llqqnt_pp', llqqnt_protocol_packet);

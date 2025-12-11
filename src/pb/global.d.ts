@@ -1,5 +1,5 @@
 export interface PMHQ {
-  sendPB: (cmd: string, pbHex: string) => void;
+  sendPB: (cmd: string, pbHex: string) => Promise<any>;
 }
 
 declare global {
