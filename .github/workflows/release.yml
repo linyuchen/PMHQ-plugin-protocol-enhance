@@ -43,4 +43,4 @@ jobs:
           generate_release_notes: true
           files: pmhq-plugin-protocol-enhance.zip
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.ACTION_TOKEN }}
