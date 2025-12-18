@@ -1,13 +1,25 @@
 import i_poke from './icon/poke.svg'
 import i_title from './icon/special-title.svg'
 
+function findVueInstance(element) {
+    // 向上查找直到找到 Vue 实例
+    while (element) {
+        if (element.__VUE__) {
+            return element.__VUE__[0];
+        }
+        element = element.parentElement;
+    }
+    return null;
+}
+
 function getTargetByAvatar(rightClickElement) {
+    const vueInstance = findVueInstance(rightClickElement);
     // 判断是否是消息上的头像
     if (rightClickElement.classList.contains('message-container__avatar')) {
-        let props = rightClickElement.parentElement.parentElement.parentElement['__VUE__']?.[0].vnode.component.props;
-        if (!props) {
-            props = rightClickElement.parentElement.parentElement.parentElement.parentElement['__VUE__']?.[0].vnode.component.props;
+        if (!vueInstance) {
+            throw new Error("Can't find Vue instance for rightClickElement");
         }
+        let props = vueInstance.vnode.component.props;
         if (props.msgRecord.chatType === 1) {
             return {
                 targetUin: props.msgRecord.senderUin,
@@ -23,7 +35,6 @@ function getTargetByAvatar(rightClickElement) {
     }
     // 判断是否是群成员列表上的头像
     if (rightClickElement.classList.contains('group-user__avatar')) {
-        const vueInstance = rightClickElement.parentElement.parentElement.__VUE__[0];
         const props = vueInstance.props;
         // console.log(props)
         // 通过vue的parent Component 获取群号
@@ -38,8 +49,7 @@ function getTargetByAvatar(rightClickElement) {
 
     // 小灰条消息
     if (rightClickElement.classList.contains('gray-tip-action')) {
-        const vueInstance = rightClickElement.parentElement.__VUE__[0];
-        const msgRecord = vueInstance.parent.data.msgRecord
+        const msgRecord = vueInstance.props.msgRecord
         const targetUin = msgRecord.elements[0].grayTipElement.jsonGrayTipElement.xmlToJsonParam.templParam.get('uin_str1')
         const targetUid = vueInstance.props[3]?.payload.uid
         const groupCode = msgRecord.peerUin
