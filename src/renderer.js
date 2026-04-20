@@ -13,6 +13,12 @@ function findVueInstance(element) {
 }
 
 function getTargetByAvatar(rightClickElement) {
+    // 如果点到的是 avatar-native 内部或本身，向上找到 message-container__avatar
+    if (!rightClickElement.classList.contains('message-container__avatar') &&
+        !rightClickElement.classList.contains('group-user__avatar') &&
+        !rightClickElement.classList.contains('gray-tip-action')) {
+        rightClickElement = rightClickElement.closest('.message-container__avatar, .group-user__avatar, .gray-tip-action') || rightClickElement;
+    }
     const vueInstance = findVueInstance(rightClickElement);
     // 判断是否是消息上的头像
     if (rightClickElement.classList.contains('message-container__avatar')) {
@@ -35,20 +41,24 @@ function getTargetByAvatar(rightClickElement) {
     }
     // 判断是否是群成员列表上的头像
     if (rightClickElement.classList.contains('group-user__avatar')) {
-        const props = vueInstance.props;
-        // console.log(props)
-        // 通过vue的parent Component 获取群号
-        const groupComponent = vueInstance.parent.parent;
-        const groupCode = groupComponent.props.groupCode;
+        const groupUserEl = rightClickElement.closest('.group-user');
+        const targetUid = groupUserEl?.dataset?.key || groupUserEl?.getAttribute('data-key');
+        if (!targetUid) return null;
+        const msgVue = document.querySelector('.message.vue-component');
+        const msgVueInstance = msgVue?.__VUE__?.[0];
+        const groupCode = msgVueInstance?.props?.peerUin;
+        const getMemberInfo = msgVueInstance?.vnode?.component?.props?.getMemberInfoByUid;
+        const memberInfo = typeof getMemberInfo === 'function' ? getMemberInfo(targetUid) : null;
         return {
             groupCode,
-            targetUin: props.memberData.uin,
-            targetUid: props.memberData.uid
+            targetUin: memberInfo?.uin,
+            targetUid,
         }
     }
 
     // 小灰条消息
     if (rightClickElement.classList.contains('gray-tip-action')) {
+        if (!vueInstance) return null;
         const msgRecord = vueInstance.props.msgRecord
         const targetUin = msgRecord.elements[0].grayTipElement.jsonGrayTipElement.xmlToJsonParam.templParam.get('uin_str1')
         const targetUid = vueInstance.props[3]?.payload.uid
@@ -83,13 +93,12 @@ function injectContextMenu() {
 
     function hookNode(node) {
         if (node.nodeType === Node.ELEMENT_NODE) {
-            const avatars = node.querySelectorAll('.avatar');
-            // console.log(avatars);
+            const avatars = node.querySelectorAll('.avatar, .avatar-native');
             avatars.forEach(avatar => {
                 // console.log(avatar);
                 avatar.addEventListener('contextmenu', e => {
-                    // console.log('右击了头像', e);
                     const targetInfo = getTargetByAvatar(e.target)
+                    if (!targetInfo) return;
                     if (!targetInfo.groupCode) {
                         window.llqqnt_pp.poke(targetInfo.targetUin);
                     }
@@ -98,9 +107,12 @@ function injectContextMenu() {
         }
         if (node?.previousSibling?.classList?.contains('q-context-menu')) {
             const r = node.previousSibling.getBoundingClientRect();
-            const rightClickEle = document.elementFromPoint(r.x, r.y);
-            // console.log("右击的元素", rightClickEle);
-            const isAvatar = rightClickEle.classList.contains('avatar');
+            let rightClickEle = document.elementFromPoint(r.x, r.y);
+            // elementFromPoint 可能返回头像内部的子元素（如 img），向上找 .avatar
+            if (rightClickEle && !rightClickEle.classList.contains('avatar') && !rightClickEle.classList.contains('avatar-native') && !rightClickEle.classList.contains('gray-tip-action')) {
+                rightClickEle = rightClickEle.closest('.avatar, .avatar-native') || rightClickEle.closest('.gray-tip-action') || rightClickEle;
+            }
+            const isAvatar = rightClickEle.classList.contains('avatar') || rightClickEle.classList.contains('avatar-native');
             const isGrayTipAction = rightClickEle.classList.contains('gray-tip-action');
             if (isAvatar || isGrayTipAction) {
                 let html = `
